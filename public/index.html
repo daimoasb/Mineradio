@@ -19628,7 +19628,7 @@ function playlistPanelDetailHtml(pl, provider) {
   }
   return '<div class="pl-inline-detail" data-pl-detail="' + escHtml(key) + '">' +
     '<div class="pl-detail-sticky">' +
-      '<div class="pl-detail-head">' + img + '<div style="flex:1;min-width:0"><div class="pl-detail-title">' + escHtml(pl.name || window.t('playlist.detailTitle')) + '</div><div class="pl-detail-sub">' + escHtml((pl.trackCount || tracks.length || 0) + ' 首 · ' + (pl.creator || (provider === 'qq' ? window.t('provider.qqMusic') : window.t('provider.neteaseMusic')))) + '</div></div><div class="pl-detail-count">' + (loading ? window.t('common.loadingShort') : (renderLimit + '/' + tracks.length)) + '</div></div>' +
+      '<div class="pl-detail-head">' + img + '<div style="flex:1;min-width:0"><div class="pl-detail-title">' + escHtml(pl.name || window.t('playlist.detailTitle')) + '</div><div class="pl-detail-sub">' + escHtml(window.t('playlist.trackCountFmt', { n: (pl.trackCount || tracks.length || 0) }) + ' · ' + (pl.creator || (provider === 'qq' ? window.t('provider.qqMusic') : window.t('provider.neteaseMusic')))) + '</div></div><div class="pl-detail-count">' + (loading ? window.t('common.loadingShort') : (renderLimit + '/' + tracks.length)) + '</div></div>' +
       '<div class="pl-detail-actions"><button class="pl-detail-play" type="button" data-pl-detail-play="' + escHtml(key) + '"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' + window.t('playlist.playAll') + '</button><button class="fx-mini-btn ghost pl-detail-top-btn" type="button" data-pl-detail-top="1">' + window.t('playlist.backToTop') + '</button></div>' +
     '</div>' +
     '<div class="pl-detail-list">' + rows + '</div>' +
@@ -19780,7 +19780,7 @@ function renderUserPlaylistsList(opts) {
     var expanded = playlistPanelDetailState.key === key ? ' expanded' : '';
     return '<div class="pl-card' + expanded + '" data-playlist-provider="' + provider + '" data-playlist-id="' + escHtml(String(pl.id || '')) + '" data-playlist-title="' + escHtml(pl.name || '') + '">' +
       imgTag +
-      '<div style="flex:1;min-width:0"><div class="pl-name">' + escHtml(pl.name) + '<span class="tag-source ' + provider + '" style="margin-left:6px;vertical-align:1px">' + providerLabel + '</span></div><div class="pl-sub">' + pl.trackCount + ' 首 · ' + escHtml(pl.creator || '') + '</div></div>' +
+      '<div style="flex:1;min-width:0"><div class="pl-name">' + escHtml(pl.name) + '<span class="tag-source ' + provider + '" style="margin-left:6px;vertical-align:1px">' + providerLabel + '</span></div><div class="pl-sub">' + escHtml(window.t('playlist.trackCountFmt', { n: (pl.trackCount || 0) })) + ' · ' + escHtml(pl.creator || '') + '</div></div>' +
     '</div>' + playlistPanelDetailHtml(pl, provider);
   }
   var groups = [
@@ -19825,7 +19825,7 @@ function renderMyPodcastCollections(opts) {
     var imgTag = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="this.style.opacity=0.2">' : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(0,245,212,.07);flex-shrink:0"></div>';
     return '<div class="pl-card podcast-card" data-podcast-key="' + escHtml(pc.key || '') + '" data-podcast-title="' + escHtml(pc.title || '') + '">' +
       imgTag +
-      '<div style="flex:1;min-width:0"><div class="pl-name">' + escHtml(pc.title || '') + '</div><div class="pl-sub">' + (pc.count || 0) + ' 项 · ' + escHtml(pc.sub || '') + '</div></div>' +
+      '<div style="flex:1;min-width:0"><div class="pl-name">' + escHtml(pc.title || '') + '</div><div class="pl-sub">' + escHtml(window.t('podcast.itemCountFmt', { n: (pc.count || 0) })) + ' · ' + escHtml(pc.sub || '') + '</div></div>' +
     '</div>';
   }).join('');
   if (opts.animate) animateVisiblePanelList($pod, '.pl-card', document.getElementById('playlist-panel'));
@@ -24701,6 +24701,8 @@ document.addEventListener('mineradio-lang-changed', function () {
   try { if (typeof updateLikeButtons === 'function') updateLikeButtons(); } catch (e) {}
   try { if (typeof refreshSearchResultActionStates === 'function') refreshSearchResultActionStates(); } catch (e) {}
   try { if (typeof safeRenderQueuePanel === 'function') safeRenderQueuePanel('lang-changed', { scrollCurrent: false }); } catch (e) {}
+  try { if (typeof renderUserPlaylistsList === 'function' && userPlaylists.length) renderUserPlaylistsList(); } catch (e) {}
+  try { if (typeof renderMyPodcastCollections === 'function') renderMyPodcastCollections(); } catch (e) {}
   try { if (typeof renderUserBtn === 'function') renderUserBtn(); } catch (e) {}
   try { if (document.getElementById('login-modal') && document.getElementById('login-modal').classList.contains('show') && typeof updateLoginProviderUi === 'function') updateLoginProviderUi(); } catch (e) {}
   try { if (typeof updateLyricColorControls === 'function') updateLyricColorControls(); } catch (e) {}
@@ -24711,6 +24713,7 @@ document.addEventListener('mineradio-lang-changed', function () {
   try { if (typeof buildLyricColorControls === 'function') buildLyricColorControls(); } catch (e) {}
   try { if (typeof relabelFxPanelControls === 'function') relabelFxPanelControls(); } catch (e) {}
   try { if (typeof buildPresetGrid === 'function') buildPresetGrid(); } catch (e) {}
+  try { if (typeof renderUserFxArchives === 'function') renderUserFxArchives(); } catch (e) {}
   try { var hkm = document.getElementById('hotkey-modal'); if (hkm && typeof renderHotkeySettings === 'function') renderHotkeySettings(); } catch (e) {}
 });
 
@@ -26857,7 +26860,11 @@ var renderPerfState = {
   skipped: 0,
   longFrames: 0,
   lastRenderAt: 0,
-  lastSampleAt: performance.now()
+  lastSampleAt: performance.now(),
+  workAccum: 0,
+  workPeak: 0,
+  workAvg: 0,
+  workMax: 0
 };
 window.__mineradioPerf = renderPerfState;
 var splashWarmRenderLast = 0;
@@ -26896,7 +26903,12 @@ function sampleRenderPerf(now, dt) {
   renderPerfState.frames += 1;
   if (dt > 0.034) renderPerfState.longFrames += 1;
   if (now - renderPerfState.lastSampleAt >= 1000) {
+    var sampledFrames = Math.max(1, renderPerfState.frames);
     renderPerfState.fps = Math.round(renderPerfState.frames * 1000 / Math.max(1, now - renderPerfState.lastSampleAt));
+    renderPerfState.workAvg = Math.round((renderPerfState.workAccum / sampledFrames) * 100) / 100;
+    renderPerfState.workMax = Math.round(renderPerfState.workPeak * 100) / 100;
+    renderPerfState.workAccum = 0;
+    renderPerfState.workPeak = 0;
     renderPerfState.frames = 0;
     renderPerfState.lastSampleAt = now;
   }
@@ -27157,8 +27169,43 @@ function animate() {
   }
 
   renderer.render(scene, camera);
+  var _frameWork = performance.now() - now;
+  renderPerfState.workAccum += _frameWork;
+  if (_frameWork > renderPerfState.workPeak) renderPerfState.workPeak = _frameWork;
 }
 animate();
+
+(function mineradioFpsHud(){
+  var box = null, on = false, timer = null;
+  function ensure(){
+    if (box) return box;
+    box = document.createElement('div');
+    box.id = 'mineradio-fps-hud';
+    box.style.cssText = 'position:fixed;top:10px;right:10px;z-index:2147483647;font:11px/1.55 ui-monospace,Consolas,Menlo,monospace;color:#e6edf5;background:rgba(10,14,20,.82);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 10px;pointer-events:none;white-space:pre;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.5);box-shadow:0 6px 20px rgba(0,0,0,.4)';
+    document.body.appendChild(box);
+    return box;
+  }
+  function paint(){
+    var p = window.__mineradioPerf || {};
+    var fps = p.fps || 0;
+    var col = fps >= 58 ? '#79ffb0' : (fps >= 45 ? '#ffd27a' : '#ff8a8a');
+    ensure().innerHTML =
+      '<span style="color:' + col + ';font-weight:600">FPS ' + fps + '</span>  <span style="opacity:.6">' + (p.mode || '') + '</span>\n' +
+      'CPU ' + (p.workAvg || 0).toFixed(2) + 'ms  peak ' + (p.workMax || 0).toFixed(2) + 'ms\n' +
+      '<span style="opacity:.6">long ' + (p.longFrames || 0) + '  skip ' + (p.skipped || 0) + '</span>';
+  }
+  function setOn(v){
+    on = v;
+    try { localStorage.setItem('mineradio-fps-hud', v ? '1' : '0'); } catch(e){}
+    if (v){ ensure().style.display = 'block'; paint(); if (!timer) timer = setInterval(paint, 300); }
+    else { if (box) box.style.display = 'none'; if (timer){ clearInterval(timer); timer = null; } }
+  }
+  window.__toggleFpsHud = function(){ setOn(!on); return on; };
+  window.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyF') { e.preventDefault(); setOn(!on); }
+  });
+  try { if (localStorage.getItem('mineradio-fps-hud') === '1') setOn(true); } catch(e){}
+})();
 </script>
 </body>
 </html>

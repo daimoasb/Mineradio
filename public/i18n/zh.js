@@ -1013,11 +1013,13 @@
     'playlist.noPlayableSongs': '暂无可播放歌曲',
     'playlist.programCountFmt': '{n} 项播客内容',
     'playlist.songCountFmt': '{n} 首歌曲',
+    'playlist.trackCountFmt': '{n} 首',
 
     'podcast.loginShow': '登录后显示我的播客',
     'podcast.noData': '暂无播客数据',
     'podcast.mine': '我的播客',
     'podcast.noContent': '暂无内容',
+    'podcast.itemCountFmt': '{n} 项',
 
     'collect.loginShow': '登录后显示你的歌单',
     'collect.noWritable': '还没有可写入的歌单，可以先新建一个',

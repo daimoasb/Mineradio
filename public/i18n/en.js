@@ -1013,11 +1013,13 @@
     'playlist.noPlayableSongs': 'No playable songs',
     'playlist.programCountFmt': '{n} podcast items',
     'playlist.songCountFmt': '{n} songs',
+    'playlist.trackCountFmt': '{n} songs',
 
     'podcast.loginShow': 'Sign in to show my podcasts',
     'podcast.noData': 'No podcast data',
     'podcast.mine': 'My podcasts',
     'podcast.noContent': 'No content',
+    'podcast.itemCountFmt': '{n} items',
 
     'collect.loginShow': 'Sign in to show your playlists',
     'collect.noWritable': 'No writable playlist yet; create one first',
